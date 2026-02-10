@@ -72,19 +72,48 @@ export function SceneEditor({
     }
 
     return (
-        <div className="preview-placeholder">
-            <span className="preview-icon">{artStyleIcon}</span>
-            <div className="preview-status">Preview: Scene {sceneIndex + 1}</div>
-            <div className="scene-info-overlay">
-                <p className="scene-mood">{scene.visuals?.mood}</p>
+        <div className="preview-placeholder" style={{
+            backgroundImage: scene.visualRefUrl ? `url(${scene.visualRefUrl})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative'
+        }}>
+            {/* Dark overlay for text readability if image exists */}
+            {scene.visualRefUrl && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.4)',
+                    zIndex: 0
+                }} />
+            )}
+
+            {!scene.visualRefUrl && <span className="preview-icon">{artStyleIcon}</span>}
+
+            <div className="preview-status" style={{ position: 'relative', zIndex: 1 }}>
+                {scene.visualRefStatus === 'generating' ? '⏳ Generating Image...' : `Preview: Scene ${sceneIndex + 1}`}
+            </div>
+
+            <div className="scene-info-overlay" style={{ position: 'relative', zIndex: 1 }}>
+                {!scene.visualRefUrl && <p className="scene-mood">{scene.visuals?.mood}</p>}
+
                 <div className="scene-script-preview">
                     <p><strong>Camera:</strong> {scene.camera?.angle} / {scene.camera?.movement}</p>
                     <p><strong>Color:</strong> {scene.visuals?.colorTone}</p>
                     <p><strong>Voice:</strong> {scene.audio?.dialogue}</p>
                 </div>
-                <button className="btn-edit-icon" onClick={() => setEditMode(true)}>
-                    ✏️ แก้ไขฉากนี้
-                </button>
+
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
+                    <button className="btn-edit-icon" onClick={() => setEditMode(true)}>
+                        ✏️ แก้ไขฉากนี้
+                    </button>
+                    <button className="btn-edit-icon" onClick={() => onGenerateVisualRef(sceneIndex)} disabled={scene.visualRefStatus === 'generating'}>
+                        🎨 {scene.visualRefUrl ? 'Re-Generate' : 'Generate Image'}
+                    </button>
+                </div>
             </div>
         </div>
     )

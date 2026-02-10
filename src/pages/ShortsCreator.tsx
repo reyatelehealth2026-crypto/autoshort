@@ -5,6 +5,7 @@ import { DirectorChat } from '../components/shorts-creator/DirectorChat'
 import { useProjectStore } from '../stores/useProjectStore'
 import { useUIStore } from '../stores/useUIStore'
 import { useScriptGenerator } from '../hooks/useScriptGenerator'
+import { useSettingsStore } from '../stores/useSettingsStore'
 import './ShortsCreator.css'
 
 export default function ShortsCreator() {
@@ -16,24 +17,71 @@ export default function ShortsCreator() {
   const { showArtModal, setShowArtModal } = useUIStore()
   const { handleMainAction, handleSelectIdea, handleAssistantSend } = useScriptGenerator()
 
+  // Updated generation function with API call
   const generateVisualRef = async (idx: number) => {
-    if (!scriptData) return
+    const currentScript = useProjectStore.getState().scriptData
+    if (!currentScript) return
+
+    const settings = useSettingsStore.getState()
+    if (!settings.leonardoKey) {
+      alert('กรุณาใส่ Leonardo API Key ใน Settings ก่อน (คลิกที่รูปกุญแจ)')
+      return
+    }
+
+    // Set generating status
     useProjectStore.getState().setScriptData({
-      ...scriptData,
-      scenes: scriptData.scenes.map((s, i) =>
+      ...currentScript,
+      scenes: currentScript.scenes.map((s, i) =>
         i === idx ? { ...s, visualRefStatus: 'generating' as const } : s
       )
     })
-    setTimeout(() => {
-      const current = useProjectStore.getState().scriptData
-      if (!current) return
+
+    try {
+      const scene = currentScript.scenes[idx]
+      const response = await fetch('http://localhost:3001/api/providers/leonardo/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: settings.leonardoKey,
+          prompt: scene.imagePrompt,
+          width: formData.orientation === 'vertical' ? 768 : 1360,
+          height: formData.orientation === 'vertical' ? 1360 : 768,
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) throw new Error(data.error || 'Generaton failed')
+
+      // Update with result
+      const updatedScript = useProjectStore.getState().scriptData
+      if (!updatedScript) return
+
       useProjectStore.getState().setScriptData({
-        ...current,
-        scenes: current.scenes.map((s, i) =>
-          i === idx ? { ...s, visualRefStatus: 'ready' as const, visualRefUrl: 'https://via.placeholder.com/1024x1792/1a1a2e/FFFFFF?text=AI+Visual' } : s
+        ...updatedScript,
+        scenes: updatedScript.scenes.map((s, i) =>
+          i === idx ? {
+            ...s,
+            visualRefStatus: 'ready' as const,
+            visualRefUrl: data.imageUrl || data.url
+          } : s
         )
       })
-    }, 2000)
+
+    } catch (err: any) {
+      console.error(err)
+      alert(`Failed to generate image: ${err.message}`)
+
+      // Reset status to allow retry
+      const failedScript = useProjectStore.getState().scriptData
+      if (!failedScript) return
+      useProjectStore.getState().setScriptData({
+        ...failedScript,
+        scenes: failedScript.scenes.map((s, i) =>
+          i === idx ? { ...s, visualRefStatus: 'error' as const } : s
+        )
+      })
+    }
   }
 
   const isFormValid = formData.topic.trim() !== ''
