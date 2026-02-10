@@ -1,0 +1,248 @@
+.bf-container {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #050B18;
+  color: #FFFFFF;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.bf-grid-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: radial-gradient(#ffffff 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.bf-content-wrapper {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.bf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4rem;
+}
+
+.bf-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #00F0FF;
+  letter-spacing: 0.2em;
+}
+
+.bf-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.bf-nav-item {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a0aec0;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.bf-nav-item:hover {
+  color: #00F0FF;
+}
+
+.bf-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .bf-grid-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.bf-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 1.5rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #00F0FF;
+  background-color: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 4px;
+}
+
+.bf-main-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.bf-gradient-text {
+  background: linear-gradient(to right, #00F0FF, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bf-description {
+  font-size: 1.125rem;
+  color: #a0aec0;
+  margin-bottom: 2.5rem;
+  max-width: 450px;
+}
+
+.bf-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.bf-btn-primary {
+  padding: 1rem 2rem;
+  background-color: #00F0FF;
+  color: #000000;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bf-btn-secondary {
+  padding: 1rem 2rem;
+  background-color: transparent;
+  color: #00F0FF;
+  border: 1px solid rgba(0, 240, 255, 0.5);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bf-btn-secondary:hover {
+  background-color: rgba(0, 240, 255, 0.1);
+}
+
+.bf-hud-stats {
+  margin-top: 4rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.bf-stat-card {
+  padding: 1rem;
+  background-color: rgba(16, 42, 67, 0.5);
+  border: 1px solid #1a1a25;
+  border-radius: 8px;
+}
+
+.bf-stat-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  color: #71717a;
+  margin-bottom: 0.25rem;
+}
+
+.bf-stat-value {
+  font-family: monospace;
+  font-size: 1.25rem;
+}
+
+.bf-cyan { color: #00F0FF; }
+.bf-emerald { color: #22c55e; }
+.bf-blue { color: #3b82f6; }
+.bf-muted { color: #71717a; }
+
+.bf-visual-panel {
+  position: relative;
+}
+
+.bf-aura {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 240, 255, 0.15);
+  filter: blur(80px);
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.bf-glass-panel {
+  position: relative;
+  z-index: 10;
+  padding: 1rem;
+  background: rgba(16, 42, 67, 0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.bf-preview-img {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  filter: grayscale(20%);
+  transition: filter 0.5s;
+}
+
+.bf-glass-panel:hover .bf-preview-img {
+  filter: grayscale(0%);
+}
+
+.bf-scanline-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.1;
+}
+
+.bf-scanline {
+  width: 100%;
+  height: 2px;
+  background-color: #00F0FF;
+  position: absolute;
+  top: 0;
+  animation: scanline 4s linear infinite;
+}
+
+@keyframes scanline {
+  0% { top: -5%; }
+  100% { top: 105%; }
+}
+
+.bf-data-overlay {
+  position: absolute;
+  top: 2.5rem;
+  right: -1rem;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.625rem;
+  z-index: 20;
+}
