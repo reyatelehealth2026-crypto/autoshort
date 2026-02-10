@@ -11,6 +11,7 @@ const PodcastScript = lazy(() => import('./pages/PodcastScript'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const YouTubeIntegration = lazy(() => import('./pages/YouTubeIntegration'))
 const ComingSoon = lazy(() => import('./pages/ComingSoon'))
+const AutomationPipeline = lazy(() => import('./pages/AutomationPipeline'))
 
 function LazyPage({ children }: { children: React.ReactNode }) {
     return (
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
             { path: 'social', element: <LazyPage><SocialPostGenerator /></LazyPage> },
             { path: 'analytics', element: <LazyPage><AnalyticsDashboard /></LazyPage> },
             { path: 'youtube', element: <LazyPage><YouTubeIntegration /></LazyPage> },
+            { path: 'automation', element: <LazyPage><AutomationPipeline /></LazyPage> },
         ]
     }
 ])

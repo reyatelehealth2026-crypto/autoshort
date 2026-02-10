@@ -36,6 +36,12 @@ const menuItems: MenuSection[] = [
     items: [
       { path: '/youtube', icon: '▶️', label: 'YouTube Studio', badge: '•' },
     ]
+  },
+  {
+    section: 'ระบบอัตโนมัติ',
+    items: [
+      { path: '/automation', icon: '🤖', label: 'Automation Pipeline', badge: '🆕' },
+    ]
   }
 ]
 

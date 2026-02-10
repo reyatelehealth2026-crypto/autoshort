@@ -177,3 +177,70 @@ export interface ShortsCreatorProps {
 export interface ComingSoonProps {
     pageId: string
 }
+
+// ==================== Pipeline Automation ====================
+export type PipelineStatus =
+    | 'idle'
+    | 'researching'
+    | 'planning'
+    | 'scripting'
+    | 'generating_images'
+    | 'generating_voice'
+    | 'generating_video'
+    | 'assembling'
+    | 'completed'
+    | 'error'
+    | 'paused'
+
+export interface PipelineStep {
+    id: string
+    name: string
+    status: 'pending' | 'running' | 'completed' | 'error' | 'skipped' | 'awaiting_approval'
+    agent: string
+    icon: string
+    output?: any
+    error?: string
+    startedAt?: string
+    completedAt?: string
+    retryCount: number
+}
+
+export interface MediaOutputItem {
+    id: string
+    provider: string
+    status: 'pending' | 'processing' | 'completed' | 'error'
+    sceneNumber: number
+    // Image
+    imageUrl?: string
+    prompt?: string
+    // Audio
+    audioUrl?: string
+    text?: string
+    voiceId?: string
+    // Video
+    videoUrl?: string
+    sourceImageUrl?: string
+    durationSec?: number
+    // Error
+    error?: string
+    metadata?: Record<string, any>
+}
+
+export interface PipelineConfig {
+    topic: string
+    mode: 'full_auto' | 'semi_auto'
+    providers: {
+        image: 'leonardo' | 'none'
+        voice: 'elevenlabs' | 'none'
+        video: 'kling' | 'leonardo_motion' | 'none'
+    }
+    formData: FormData
+}
+
+export interface ProviderKeys {
+    gemini: string
+    leonardo: string
+    elevenlabs: string
+    kling: string
+}
+
