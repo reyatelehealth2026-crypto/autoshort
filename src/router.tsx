@@ -29,7 +29,7 @@ export const router = createBrowserRouter([
             { index: true, element: <LazyPage><ToolsHub /></LazyPage> },
             { path: 'create', element: <LazyPage><ShortsCreator /></LazyPage> },
             { path: 'trends', element: <LazyPage><TrendsDashboard /></LazyPage> },
-            { path: 'studio', element: <LazyPage><ComingSoon /></LazyPage> },
+            { path: 'studio', element: <LazyPage><ShortsCreator /></LazyPage> },
             { path: 'long-video', element: <LazyPage><LongVideoScript /></LazyPage> },
             { path: 'podcast', element: <LazyPage><PodcastScript /></LazyPage> },
             { path: 'social', element: <LazyPage><SocialPostGenerator /></LazyPage> },

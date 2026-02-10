@@ -3,8 +3,8 @@
 // --- Provider Config ---
 export interface ProviderConfig {
     apiKey: string
-    baseUrl: string
-    enabled: boolean
+    baseUrl?: string
+    enabled?: boolean
 }
 
 export interface AllProviderConfigs {

@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import ArtStyleModal from '../components/ArtStyleModal'
 import { SetupForm } from '../components/shorts-creator/SetupForm'
 import { VideoPreview } from '../components/shorts-creator/VideoPreview'
@@ -16,6 +18,16 @@ export default function ShortsCreator() {
   } = useProjectStore()
   const { showArtModal, setShowArtModal } = useUIStore()
   const { handleMainAction, handleSelectIdea, handleAssistantSend } = useScriptGenerator()
+  const location = useLocation()
+
+  // Auto-switch to Simple Mode if entering via /studio (Manual Studio)
+  useEffect(() => {
+    if (location.pathname === '/studio') {
+      useProjectStore.getState().setCreationMode('simple')
+    } else {
+      useProjectStore.getState().setCreationMode('super')
+    }
+  }, [location.pathname])
 
   // Updated generation function with API call
   const generateVisualRef = async (idx: number) => {
