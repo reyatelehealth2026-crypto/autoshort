@@ -44,12 +44,8 @@ export default function ShortsCreator() {
   return (
     <div className="shorts-creator">
       <div className="page-header">
-        <div className="page-label">โหมดสร้าง (Agentic v1.0)</div>
+        <div className="page-label">🚀 SuperCreate Mode</div>
         <h1 className="page-title">Shorts Factory</h1>
-        <div className="mode-toggle">
-          <button className={`mode-toggle-btn ${creationMode === 'simple' ? 'active' : ''}`} onClick={() => setCreationMode('simple')}>⚡ Simple</button>
-          <button className={`mode-toggle-btn ${creationMode === 'super' ? 'active' : ''}`} onClick={() => setCreationMode('super')}>🚀 SuperCreate</button>
-        </div>
       </div>
 
       <div className="creator-layout">

@@ -49,7 +49,8 @@ const defaultFormData: FormData = {
     voice: 'thai-female',
     music: 'upbeat',
     artStyle: artStyles[0],
-    additionalInfo: ''
+    additionalInfo: '',
+    negativePrompt: ''
 }
 
 export const useProjectStore = create<ProjectState>()((set, get) => ({
@@ -59,7 +60,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     isGenerating: false,
     progress: 0,
     error: null,
-    creationMode: 'simple',
+    creationMode: 'super',
     superStep: 'input',
     trends: [],
     selectedIdea: null,
@@ -142,7 +143,7 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
         isGenerating: false,
         progress: 0,
         error: null,
-        creationMode: 'simple',
+        creationMode: 'super',
         superStep: 'input',
         streamingText: '',
         isStreaming: false,

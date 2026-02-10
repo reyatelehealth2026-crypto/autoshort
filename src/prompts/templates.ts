@@ -118,6 +118,7 @@ export function buildScriptPrompt(params: {
     voice: string
     music: string
     additionalInfo?: string
+    negativePrompt?: string
 }): string {
     return `คุณเป็นผู้กำกับวิดีโอมืออาชีพและผู้เชี่ยวชาญด้านการสร้างคอนเทนต์วิดีโอสั้น
   
@@ -136,6 +137,7 @@ export function buildScriptPrompt(params: {
   • เสียงพากย์: ${params.voice}
   • เพลงประกอบ: ${params.music}
   ${params.additionalInfo ? `• รายละเอียดเพิ่มเติม: ${params.additionalInfo}` : ''}
+  ${params.negativePrompt ? `• ❌ Negative Prompt (สิ่งที่ห้ามใส่): ${params.negativePrompt}` : ''}
 
   ═══════════════════════════════════
   📝 รูปแบบสคริปต์ที่ต้องการ
@@ -148,6 +150,9 @@ export function buildScriptPrompt(params: {
 
   📸 IMAGE PROMPT (ภาษาอังกฤษ):
   [เขียน prompt ยาวต่อเนื่องสำหรับ AI Video Generator ที่ครอบคลุมเนื้อหาทั้งหมดในฉากเดียว]
+
+  ❌ NEGATIVE PROMPT (ภาษาอังกฤษ):
+  [เขียน negative prompt สำหรับสิ่งที่ไม่ต้องการในภาพ เช่น blurry, low quality, text, watermark ฯลฯ]
 
   🎥 มุมกล้อง: [ระบุการเคลื่อนไหวกล้องแบบต่อเนื่อง]
   🔄 การเคลื่อนไหว: [ระบุการเคลื่อนไหวในฉาก]

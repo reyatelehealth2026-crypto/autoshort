@@ -80,7 +80,8 @@ export async function generateWithGemini(apiKey: string, formData: FormData): Pr
         tone: formData.tone,
         voice: voiceLabel,
         music: musicLabel,
-        additionalInfo: formData.additionalInfo
+        additionalInfo: formData.additionalInfo,
+        negativePrompt: formData.negativePrompt
     })
 
     const response = await fetchWithRetry(
@@ -160,7 +161,8 @@ export async function* streamGenerateWithGemini(
         tone: formData.tone,
         voice: voiceLabel,
         music: musicLabel,
-        additionalInfo: formData.additionalInfo
+        additionalInfo: formData.additionalInfo,
+        negativePrompt: formData.negativePrompt
     })
 
     const response = await fetch(

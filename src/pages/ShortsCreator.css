@@ -1072,6 +1072,52 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* ── Output Hint ── */
+.output-tab-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(232, 89, 12, 0.04);
+  border: 1px solid rgba(232, 89, 12, 0.1);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.hint-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* ── Copy Button ── */
+.output-copy-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--gradient-orange);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-glow-orange);
+}
+
+.output-copy-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232, 89, 12, 0.3);
+}
+
+.output-copy-btn:active {
+  transform: translateY(0);
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .shorts-creator {

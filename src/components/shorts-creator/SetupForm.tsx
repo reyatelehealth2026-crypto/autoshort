@@ -121,6 +121,17 @@ export function SetupForm({
                 </button>
             </FormSection>
 
+            <FormSection icon="🚫" title="Negative Prompt">
+                <textarea
+                    className="input"
+                    placeholder="สิ่งที่ไม่ต้องการ เช่น blurry, low quality, text, watermark, ugly, deformed..."
+                    value={formData.negativePrompt}
+                    onChange={(e) => setFormData({ ...formData, negativePrompt: e.target.value })}
+                    rows={2}
+                    style={{ resize: 'vertical', minHeight: '48px' }}
+                />
+            </FormSection>
+
             {error && (
                 <div className="error-banner">
                     <span>⚠️</span>

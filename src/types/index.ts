@@ -116,6 +116,7 @@ export interface FormData {
     music: string
     artStyle: ArtStyle
     additionalInfo: string
+    negativePrompt: string
 }
 
 // ==================== Chat ====================
