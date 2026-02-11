@@ -36,6 +36,7 @@ interface ProjectState {
     setSelectedModel: (model: string) => void
     updateScene: (idx: number, field: string, value: any) => void
     addScene: () => void
+    addSceneWithData: (data: Partial<SceneData>) => void
     resetProject: () => void
 }
 
@@ -110,16 +111,26 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
     addScene: () => {
         const { scriptData, formData } = get()
         if (!scriptData) return
+        // ... existing logic ...
+        // I'll call addSceneWithData with current defaults? No, keep existing addScene for fallback.
+        // Actually, easiest is to just copy logic or delegate.
+        get().addSceneWithData({})
+    },
+
+    addSceneWithData: (inputData: Partial<SceneData>) => {
+        const { scriptData, formData } = get()
+        if (!scriptData) return
         const last = scriptData.scenes[scriptData.scenes.length - 1]
         const dur = durationMap[formData.duration] || 8
         const num = last.sceneNumber + 1
+
         const newScene: SceneData = {
             sceneNumber: num,
             timeRange: { start: last.timeRange.end, end: last.timeRange.end + dur, duration: dur },
-            imagePrompt: `${formData.artStyle.name} style, continuing from previous scene...`,
-            camera: { angle: 'Medium Shot', movement: 'Static' },
-            visuals: { colorTone: last.visuals.colorTone, mood: formData.tone, style: formData.artStyle.name },
-            audio: { dialogue: '(เขียนบทพูดต่อที่นี่...)', voiceTone: formData.voice, music: formData.music, soundEffects: [] },
+            imagePrompt: inputData.imagePrompt || `${formData.artStyle.name} style, continuing from previous scene...`,
+            camera: inputData.camera || { angle: 'Medium Shot', movement: 'Static' },
+            visuals: inputData.visuals || { colorTone: last.visuals.colorTone, mood: formData.tone, style: formData.artStyle.name },
+            audio: inputData.audio || { dialogue: '(เขียนบทพูดต่อที่นี่...)', voiceTone: formData.voice, music: formData.music, soundEffects: [] },
             visualRefStatus: undefined
         }
         set({

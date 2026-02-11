@@ -1,5 +1,7 @@
-import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
+import { generateNextScene } from '../services/gemini'
+import toast from 'react-hot-toast'
 import ArtStyleModal from '../components/ArtStyleModal'
 import { SetupForm } from '../components/shorts-creator/SetupForm'
 import { VideoPreview } from '../components/shorts-creator/VideoPreview'
@@ -36,8 +38,52 @@ export default function ShortsCreator() {
 
     const settings = useSettingsStore.getState()
     if (!settings.leonardoKey) {
-      alert('กรุณาใส่ Leonardo API Key ใน Settings ก่อน (คลิกที่รูปกุญแจ)')
-      return
+      // Use Pollinations AI for free image generation
+      useProjectStore.getState().setScriptData({
+        ...currentScript,
+        scenes: currentScript.scenes.map((s, i) =>
+          i === idx ? { ...s, visualRefStatus: 'generating' as const } : s
+        )
+      })
+
+      try {
+        const scene = currentScript.scenes[idx]
+        const encodedPrompt = encodeURIComponent(scene.imagePrompt)
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${formData.orientation === 'vertical' ? 768 : 1024}&height=${formData.orientation === 'vertical' ? 1024 : 768}&nologo=true`
+
+        // Simple image validation
+        const img = new Image()
+        img.src = imageUrl
+        await new Promise((resolve, reject) => {
+          img.onload = resolve
+          img.onerror = reject
+        })
+
+        const updated = useProjectStore.getState().scriptData
+        if (!updated) return
+
+        useProjectStore.getState().setScriptData({
+          ...updated,
+          scenes: updated.scenes.map((s, i) =>
+            i === idx ? {
+              ...s,
+              visualRefStatus: 'ready' as const,
+              visualRefUrl: imageUrl
+            } : s
+          )
+        })
+        toast.success('Generated with Pollinations AI (Free Mode)')
+        return
+      } catch (e) {
+        toast.error('Failed to generate image')
+        useProjectStore.getState().setScriptData({
+          ...currentScript,
+          scenes: currentScript.scenes.map((s, i) =>
+            i === idx ? { ...s, visualRefStatus: 'error' as const } : s
+          )
+        })
+        return
+      }
     }
 
     // Set generating status
@@ -101,6 +147,38 @@ export default function ShortsCreator() {
   const totalRequired = 5
   const progressPercent = (filledFields / totalRequired) * 100
 
+
+  // Smart Add Scene using AI
+  const handleSmartAddScene = async () => {
+    const currentScript = useProjectStore.getState().scriptData
+    const currentFormData = useProjectStore.getState().formData
+    const apiKey = useSettingsStore.getState().apiKey
+
+    if (!apiKey) {
+      toast.error('Please set Gemini API Key first')
+      useUIStore.getState().setShowApiKeyModal(true)
+      return
+    }
+
+    if (!currentScript) {
+      // Fallback if no script starts
+      addScene()
+      return
+    }
+
+    const toastId = toast.loading('Creativity flowing... generating next scene 🎬')
+
+    try {
+      const nextSceneData = await generateNextScene(apiKey, currentScript.scenes, currentFormData)
+      useProjectStore.getState().addSceneWithData(nextSceneData)
+      toast.success('New scene added!', { id: toastId })
+    } catch (error) {
+      console.error(error)
+      toast.error('AI Brain freeze! Adding blank scene instead.', { id: toastId })
+      addScene()
+    }
+  }
+
   return (
     <div className="shorts-creator">
       <div className="page-header">
@@ -135,10 +213,11 @@ export default function ShortsCreator() {
           artStyle={formData.artStyle}
           onUpdateScene={updateScene}
           onGenerateVisualRef={generateVisualRef}
-          onAddScene={addScene}
+          onAddScene={handleSmartAddScene}
           onSelectIdea={handleSelectIdea}
           onSceneSelect={setActiveScene}
         />
+
 
         <DirectorChat onSend={handleAssistantSend} />
       </div>

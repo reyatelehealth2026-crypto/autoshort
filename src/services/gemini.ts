@@ -1,4 +1,4 @@
-import { FormData, TrendIdea } from '../types'
+import { FormData, TrendIdea, SceneData } from '../types'
 import { buildScriptPrompt, buildTrendPrompt } from '../prompts/templates'
 import {
     genreOptions,
@@ -212,5 +212,82 @@ export async function* streamGenerateWithGemini(
                 }
             }
         }
+    }
+}
+
+// ==================== Scene Continuation ====================
+export async function generateNextScene(
+    apiKey: string,
+    currentScenes: SceneData[],
+    formData: FormData
+): Promise<Partial<SceneData>> {
+    const lastScene = currentScenes[currentScenes.length - 1]
+    const sceneNum = lastScene.sceneNumber + 1
+
+    const context = currentScenes.map(s =>
+        `Scene ${s.sceneNumber}: [Visual] ${s.imagePrompt} [Audio] ${s.audio.dialogue}`
+    ).join('\n')
+
+    const prompt = `
+You are a professional short video scriptwriter.
+Current Script Context:
+${context}
+
+Task: Write the NEXT scene (Scene ${sceneNum}) to continue the story naturally.
+Format: JSON only.
+{
+  "dialogue": "script dialogue for narration",
+  "imagePrompt": "detailed visual description for AI image generator",
+  "camera": { "angle": "...", "movement": "..." },
+  "visuals": { "mood": "...", "colorTone": "..." }
+}
+Requirements:
+- Dialogue should be concise and engaging (Thai language).
+- Visual prompt should be detailed (English, cinematic).
+- Maintain tone: ${formData.tone}
+- Maintain style: ${formData.artStyle.name}
+`.trim()
+
+    const response = await fetchWithRetry(
+        `${GEMINI_API_URL}?key=${apiKey}`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 0.7,
+                    responseMimeType: "application/json",
+                }
+            })
+        }
+    )
+
+    const data = await response.json()
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+
+    try {
+        const json = JSON.parse(text)
+        return {
+            imagePrompt: json.imagePrompt || `Scene ${sceneNum} visual`,
+            audio: {
+                dialogue: json.dialogue || '',
+                voiceTone: formData.voice,
+                music: formData.music,
+                soundEffects: []
+            },
+            camera: {
+                angle: json.camera?.angle || 'Medium Shot',
+                movement: json.camera?.movement || 'Static'
+            },
+            visuals: {
+                colorTone: json.visuals?.colorTone || 'Balanced',
+                mood: json.visuals?.mood || formData.tone,
+                style: formData.artStyle.name
+            }
+        }
+    } catch (e) {
+        console.error('Failed to parse next scene JSON', e)
+        throw new Error('AI produced invalid JSON for the next scene')
     }
 }
