@@ -290,7 +290,8 @@ export async function uploadInitImage(
             formData.append(key, value as string)
         }
     }
-    formData.append('file', new Blob([imageBuffer]), fileName)
+    const bytes = new Uint8Array(imageBuffer)
+    formData.append('file', new Blob([bytes]), fileName)
 
     await fetch(uploadUrl, {
         method: 'POST',

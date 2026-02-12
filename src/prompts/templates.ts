@@ -106,8 +106,7 @@ export const DIRECTOR_FUNCTION_DECLARATIONS = [
     }
 ]
 
-// Script generation prompt template
-export function buildScriptPrompt(params: {
+export interface ScriptPromptParams {
     topic: string
     genre: string
     artStyleName: string
@@ -119,54 +118,123 @@ export function buildScriptPrompt(params: {
     music: string
     additionalInfo?: string
     negativePrompt?: string
-}): string {
-    return `คุณเป็นผู้กำกับวิดีโอมืออาชีพและผู้เชี่ยวชาญด้านการสร้างคอนเทนต์วิดีโอสั้น
-  
-  สร้างสคริปต์ละเอียดสำหรับวิดีโอสั้น โดยกำหนดให้ 1 ฉากมีความยาว ${params.totalSeconds} วินาที (ห้ามตัดย่อยเป็นฉากสั้นๆ)
-  
-  ═══════════════════════════════════
-  📋 ข้อมูลโปรเจค
-  ═══════════════════════════════════
-  • หัวข้อ: ${params.topic}
-  • ประเภท: ${params.genre}
-  • สไตล์ภาพ: ${params.artStyleName}
-  • แนววิดีโอ: ${params.orientation}
-  • กลุ่มเป้าหมาย: ${params.audience}
-  • ความยาวทั้งหมด: ${params.totalSeconds} วินาที
-  • โทน/อารมณ์: ${params.tone}
-  • เสียงพากย์: ${params.voice}
-  • เพลงประกอบ: ${params.music}
-  ${params.additionalInfo ? `• รายละเอียดเพิ่มเติม: ${params.additionalInfo}` : ''}
-  ${params.negativePrompt ? `• ❌ Negative Prompt (สิ่งที่ห้ามใส่): ${params.negativePrompt}` : ''}
+    hasProductRef?: boolean
+    hasCharacterRef?: boolean
+    customStylePrompt?: string
+}
 
-  ═══════════════════════════════════
-  📝 รูปแบบสคริปต์ที่ต้องการ
-  ═══════════════════════════════════
+function buildPromptStrategyLayer(params: ScriptPromptParams): string {
+    return `
+[STRATEGY LAYER]
+คุณคือผู้กำกับวิดีโอสั้นระดับมืออาชีพ + strategist ที่เข้าใจ retention ของ Shorts/Reels/TikTok
+เป้าหมาย: สร้างสคริปต์ที่มี Hook ชัดภายใน 1-2 วินาทีแรก, เดินเรื่องลื่น, ปิดท้ายด้วย CTA ที่ชวนลงมือทำ
+กลุ่มเป้าหมาย: ${params.audience}
+โทน: ${params.tone}
+ประเภท: ${params.genre}
+ความยาวรวม: ${params.totalSeconds} วินาที
+`.trim()
+}
 
-  ให้เขียนเพียง 1 ฉากเดียวที่ครอบคลุมเนื้อหาทั้งหมดใน ${params.totalSeconds} วินาที:
+function buildPromptScriptLayer(params: ScriptPromptParams): string {
+    return `
+[SCRIPT LAYER]
+สร้าง narrative สำหรับคลิปเดียวแบบกระชับ แต่ครบ: hook -> value/story beat -> payoff -> CTA
+ข้อกำหนดบทพูด:
+- บทพูด/พากย์เป็นภาษาไทย ฟังเป็นธรรมชาติ
+- ยาวพอดีกับ ${params.totalSeconds} วินาที
+- ใส่ subtitle_lines สำหรับตัดซับให้อ่านง่าย (แต่ละบรรทัดสั้น)
+`.trim()
+}
 
-  🎬 ฉากที่ 1 (เวลา 0-${params.totalSeconds} วินาที)
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function buildPromptVisualLayer(params: ScriptPromptParams): string {
+    return `
+[VISUAL LAYER]
+สไตล์ภาพหลัก: ${params.artStyleName}
+${params.customStylePrompt ? `สไตล์กำหนดเองจากผู้ใช้: ${params.customStylePrompt}` : ''}
+แนววิดีโอ/เฟรม: ${params.orientation}
+เสียงพากย์: ${params.voice}
+เพลงประกอบ: ${params.music}
+กำหนดภาพให้ cinematic, ชัดเจน, มี movement ต่อเนื่องในฉากเดียว
+${params.negativePrompt ? `หลีกเลี่ยง: ${params.negativePrompt}` : ''}
+${params.hasProductRef ? '- มีภาพสินค้าแนบเป็น reference: ให้คงรูปลักษณ์สินค้าให้ใกล้เคียงต้นฉบับ' : ''}
+${params.hasCharacterRef ? '- มีภาพตัวละครแนบเป็น reference: ให้คงตัวตน/คาแรกเตอร์และความต่อเนื่องของหน้าตา' : ''}
+`.trim()
+}
 
-  📸 IMAGE PROMPT (ภาษาอังกฤษ):
-  [เขียน prompt ยาวต่อเนื่องสำหรับ AI Video Generator ที่ครอบคลุมเนื้อหาทั้งหมดในฉากเดียว]
+function buildPromptPolishLayer(params: ScriptPromptParams): string {
+    return `
+[POLISH LAYER]
+หัวข้อหลัก: ${params.topic}
+${params.additionalInfo ? `ข้อมูลเสริมจากผู้ใช้: ${params.additionalInfo}` : ''}
+ตรวจคุณภาพก่อนส่งออก:
+- title_options น่าสนใจและสั้น
+- hook คมและไม่ทั่วไป
+- hashtags ใช้งานได้จริง
+- edit_notes ใช้เป็นคำสั่งตัดต่อได้เลย
+`.trim()
+}
 
-  ❌ NEGATIVE PROMPT (ภาษาอังกฤษ):
-  [เขียน negative prompt สำหรับสิ่งที่ไม่ต้องการในภาพ เช่น blurry, low quality, text, watermark ฯลฯ]
+function buildOutputContract(params: ScriptPromptParams): string {
+    return `
+[OUTPUT CONTRACT - JSON ONLY]
+ตอบกลับเป็น JSON object เท่านั้น ห้ามมี markdown/code fence/คำอธิบายนอก JSON
+โครงสร้างต้องเป็นดังนี้:
+{
+  "title_options": ["...", "...", "..."],
+  "hook": "...",
+  "script": "...",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "time_range": { "start": 0, "end": ${params.totalSeconds}, "duration": ${params.totalSeconds} },
+      "image_prompt": "English visual prompt for AI video generation",
+      "negative_prompt": "English negative prompt",
+      "camera": { "angle": "...", "movement": "..." },
+      "visuals": { "color_tone": "...", "mood": "...", "style": "..." },
+      "dialogue": "Thai narration/dialogue",
+      "voice_tone": "...",
+      "music": "...",
+      "subtitle_lines": ["...", "..."],
+      "edit_notes": ["...", "..."]
+    }
+  ],
+  "cta": "...",
+  "hashtags": ["#...", "#..."],
+  "edit_notes": ["global note 1", "global note 2"]
+}
+ข้อบังคับ: สร้างเพียง 1 scene และให้ครอบคลุมเวลาทั้งหมด
+`.trim()
+}
 
-  🎥 มุมกล้อง: [ระบุการเคลื่อนไหวกล้องแบบต่อเนื่อง]
-  🔄 การเคลื่อนไหว: [ระบุการเคลื่อนไหวในฉาก]
-  🎨 โทนสี: [Warm / Cool / Vibrant / Muted / Cinematic / Neon / etc.]
-
-  🗣️ บทพูด/ข้อความ (พากย์ต่อเนื่อง):
-  "[ภาษาไทย สำหรับความยาว ${params.totalSeconds} วินาที]"
-
-  🎤 น้ำเสียง: [ตามโทน ${params.tone}]
-  🎵 เสียง/เพลง: [ตาม ${params.music}]
-
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ตอบเป็นสคริปต์ฉากเดียวเท่านั้น ห้ามมีคำอธิบายเพิ่มเติมนอกรูปแบบ`
+export function buildScriptPrompt(params: ScriptPromptParams): string {
+    return [
+        'คุณเป็นผู้กำกับวิดีโอมืออาชีพและผู้เชี่ยวชาญด้านการสร้างคอนเทนต์วิดีโอสั้น',
+        '📋 ข้อมูลโปรเจค',
+        `- หัวข้อ: ${params.topic}`,
+        `- ประเภท: ${params.genre}`,
+        `- สไตล์ภาพ: ${params.artStyleName}`,
+        `- แนววิดีโอ: ${params.orientation}`,
+        `- กลุ่มเป้าหมาย: ${params.audience}`,
+        `- ความยาวทั้งหมด: ${params.totalSeconds} วินาที`,
+        `- โทน/อารมณ์: ${params.tone}`,
+        `- เสียงพากย์: ${params.voice}`,
+        `- เพลงประกอบ: ${params.music}`,
+        params.customStylePrompt ? `- สไตล์กำหนดเอง: ${params.customStylePrompt}` : '',
+        params.additionalInfo ? `- รายละเอียดเพิ่มเติม: ${params.additionalInfo}` : '',
+        params.negativePrompt ? `- Negative Prompt: ${params.negativePrompt}` : '',
+        params.hasProductRef ? '- มี Product Reference: ใช่' : '',
+        params.hasCharacterRef ? '- มี Character Reference: ใช่' : '',
+        '',
+        buildPromptStrategyLayer(params),
+        '',
+        buildPromptScriptLayer(params),
+        '',
+        buildPromptVisualLayer(params),
+        '',
+        buildPromptPolishLayer(params),
+        '',
+        buildOutputContract(params)
+    ].filter(Boolean).join('\n')
 }
 
 // Trend analysis prompt template

@@ -51,7 +51,10 @@ const defaultFormData: FormData = {
     music: 'upbeat',
     artStyle: artStyles[0],
     additionalInfo: '',
-    negativePrompt: ''
+    negativePrompt: '',
+    productRefImage: null,
+    characterRefImage: null,
+    customStylePrompt: ''
 }
 
 export const useProjectStore = create<ProjectState>()((set, get) => ({

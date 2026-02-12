@@ -81,7 +81,10 @@ export async function generateWithGemini(apiKey: string, formData: FormData): Pr
         voice: voiceLabel,
         music: musicLabel,
         additionalInfo: formData.additionalInfo,
-        negativePrompt: formData.negativePrompt
+        negativePrompt: formData.negativePrompt,
+        hasProductRef: !!formData.productRefImage,
+        hasCharacterRef: !!formData.characterRefImage,
+        customStylePrompt: formData.customStylePrompt,
     })
 
     const response = await fetchWithRetry(
@@ -94,6 +97,7 @@ export async function generateWithGemini(apiKey: string, formData: FormData): Pr
                 generationConfig: {
                     temperature: 0.85,
                     maxOutputTokens: 8192,
+                    responseMimeType: 'application/json',
                 }
             })
         }
@@ -162,7 +166,10 @@ export async function* streamGenerateWithGemini(
         voice: voiceLabel,
         music: musicLabel,
         additionalInfo: formData.additionalInfo,
-        negativePrompt: formData.negativePrompt
+        negativePrompt: formData.negativePrompt,
+        hasProductRef: !!formData.productRefImage,
+        hasCharacterRef: !!formData.characterRefImage,
+        customStylePrompt: formData.customStylePrompt,
     })
 
     const response = await fetch(

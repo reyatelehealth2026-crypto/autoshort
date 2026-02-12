@@ -117,6 +117,54 @@ export const artStyles: ArtStyle[] = [
         desc: 'กราฟิก 3D สมจริงระดับเกม Next-Gen',
         params: 'UNREAL ENGINE 5 RENDER, 3D, RAY TRACING, HYPER REALISTIC',
         image: '🕹️'
+    },
+    {
+        id: 'minimal-lux',
+        name: 'Minimal Luxury',
+        icon: '✨',
+        desc: 'มินิมอลดูแพง คลีน เรียบแต่พรีเมียม',
+        params: 'MINIMALIST, CLEAN LINES, PREMIUM LIGHTING, SOFT SHADOWS',
+        image: '🪞'
+    },
+    {
+        id: 'product-studio',
+        name: 'Product Studio',
+        icon: '📦',
+        desc: 'สไตล์ถ่ายสินค้าไฟสตูดิโอ เน้นรายละเอียดชัด',
+        params: 'STUDIO PRODUCT PHOTOGRAPHY, HIGH DETAIL, SHARP TEXTURE, SOFTBOX LIGHT',
+        image: '💡'
+    },
+    {
+        id: 'k-drama',
+        name: 'K-Drama Soft',
+        icon: '💗',
+        desc: 'โทนอ่อนละมุน ผิวสวย แสงสวยแนวซีรีส์เกาหลี',
+        params: 'SOFT LIGHT, K-DRAMA LOOK, PASTEL TONES, SHALLOW DEPTH OF FIELD',
+        image: '🌸'
+    },
+    {
+        id: 'documentary-pro',
+        name: 'Documentary Pro',
+        icon: '🎥',
+        desc: 'สารคดีมืออาชีพ สมจริง มุมกล้องเน้นเล่าเรื่อง',
+        params: 'DOCUMENTARY STYLE, NATURAL LIGHT, AUTHENTIC MOMENT, 4K DETAIL',
+        image: '🧭'
+    },
+    {
+        id: 'toon-3d',
+        name: '3D Toon',
+        icon: '🧸',
+        desc: 'การ์ตูน 3D สดใส เป็นมิตร เหมาะคอนเทนต์ไวรัล',
+        params: '3D TOON, VIBRANT COLORS, CUTE CHARACTER, CLEAN RENDER',
+        image: '🌈'
+    },
+    {
+        id: 'vintage-film',
+        name: 'Vintage Film',
+        icon: '📼',
+        desc: 'ฟิล์มวินเทจ สีเก่าเกรนสวย ให้ mood คลาสสิก',
+        params: 'FILM GRAIN, VINTAGE COLOR GRADE, ANALOG LOOK, WARM TONES',
+        image: '🎞️'
     }
 ]
 

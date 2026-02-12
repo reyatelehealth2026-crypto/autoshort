@@ -3,6 +3,12 @@ import { cors } from 'hono/cors'
 import { serve } from '@hono/node-server'
 import { streamSSE } from 'hono/streaming'
 import { z } from 'zod'
+import { promises as fs } from 'node:fs'
+import path from 'node:path'
+import os from 'node:os'
+import crypto from 'node:crypto'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { startPipeline, getJob, subscribeToJob, approveStep, retryStep } from './pipeline'
 import * as leonardoProvider from './providers/leonardo'
 import * as elevenlabsProvider from './providers/elevenlabs'
@@ -16,6 +22,7 @@ const DEFAULT_MODEL = 'gemini-2.0-flash'
 
 // In production, load from env vars
 const API_KEY = process.env.GEMINI_API_KEY || ''
+const execFileAsync = promisify(execFile)
 
 // ==================== Rate Limiting ====================
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
@@ -65,6 +72,16 @@ const ChatSchema = z.object({
 const TrendsSchema = z.object({
     topic: z.string().min(1).max(500),
     model: z.string().default(DEFAULT_MODEL),
+})
+
+const NanoBananaSchema = z.object({
+    prompt: z.string().min(1),
+    orientation: z.enum(['vertical', 'horizontal', 'square']).default('vertical'),
+    references: z.array(z.object({
+        type: z.enum(['product', 'character']),
+        name: z.string().min(1),
+        dataUrl: z.string().min(1),
+    })).max(14).default([]),
 })
 
 // ==================== Hono App ====================
@@ -216,7 +233,7 @@ app.post('/api/stream', async (c) => {
 
         if (!response.ok) {
             const err = await response.json().catch(() => ({}))
-            return c.json({ error: (err as any)?.error?.message || `HTTP ${response.status}` }, response.status)
+            return c.json({ error: (err as any)?.error?.message || `HTTP ${response.status}` }, response.status as any)
         }
 
         // Stream through to client
@@ -472,6 +489,82 @@ app.post('/api/providers/leonardo/generate', async (c) => {
         return c.json(result)
     } catch (err: any) {
         return c.json({ error: err.message }, 500)
+    }
+})
+
+// Nano Banana Pro (Gemini Image): Generate with reference images
+app.post('/api/providers/nano-banana/generate', async (c) => {
+    const body = await c.req.json()
+    const parsed = NanoBananaSchema.safeParse(body)
+
+    if (!parsed.success) {
+        return c.json({ error: 'Validation error', details: parsed.error.issues }, 400)
+    }
+
+    const { prompt, orientation, references } = parsed.data
+    const scriptPath = path.resolve(process.cwd(), '../skills/nano-banana-pro/scripts/generate_image.py')
+
+    try {
+        await fs.access(scriptPath)
+    } catch {
+        return c.json({ error: `Nano Banana script not found at ${scriptPath}` }, 404)
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+        return c.json({ error: 'GEMINI_API_KEY is required on server for Nano Banana' }, 401)
+    }
+
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'autoshort-nano-'))
+
+    try {
+        const inputPaths: string[] = []
+        for (const ref of references) {
+            const match = ref.dataUrl.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/)
+            if (!match) continue
+            const ext = match[1].split('/')[1] || 'png'
+            const filePath = path.join(tmpDir, `${ref.type}-${crypto.randomUUID()}.${ext}`)
+            await fs.writeFile(filePath, Buffer.from(match[2], 'base64'))
+            inputPaths.push(filePath)
+        }
+
+        const finalPrompt = `${prompt}\n\nReference policy:\n- Keep product shape/logo/packaging consistent with product reference image.\n- Keep character identity, facial traits, hairstyle, and outfit style consistent with character reference image.\n- Keep cinematic quality for short-video storyboard frame.`
+        const resolution = orientation === 'vertical' ? '2K' : '1K'
+        const outputFile = `${new Date().toISOString().replace(/[:.]/g, '-')}-nano.png`
+
+        const args = ['run', scriptPath, '--prompt', finalPrompt, '--filename', outputFile, '--resolution', resolution]
+        for (const p of inputPaths) args.push('-i', p)
+
+        const { stdout, stderr } = await execFileAsync('uv', args, {
+            cwd: tmpDir,
+            env: { ...process.env, GEMINI_API_KEY: process.env.GEMINI_API_KEY },
+            maxBuffer: 20 * 1024 * 1024,
+        })
+
+        const combined = `${stdout || ''}\n${stderr || ''}`
+        const mediaLine = combined.split(/\r?\n/).find((line) => line.startsWith('MEDIA:'))
+
+        let outputPath = ''
+        if (mediaLine) {
+            outputPath = mediaLine.replace('MEDIA:', '').trim()
+        } else {
+            outputPath = path.join(tmpDir, outputFile)
+        }
+
+        const fileBuffer = await fs.readFile(outputPath)
+        const mimeType = outputPath.toLowerCase().endsWith('.jpg') || outputPath.toLowerCase().endsWith('.jpeg')
+            ? 'image/jpeg'
+            : 'image/png'
+        const imageDataUrl = `data:${mimeType};base64,${fileBuffer.toString('base64')}`
+
+        return c.json({
+            provider: 'nano-banana-pro',
+            filePath: outputPath,
+            imageDataUrl,
+        })
+    } catch (err: any) {
+        return c.json({ error: err.message || 'Nano Banana generation failed' }, 500)
+    } finally {
+        await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => undefined)
     }
 })
 

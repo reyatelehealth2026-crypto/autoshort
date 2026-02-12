@@ -1,5 +1,5 @@
 import React from 'react'
-import { FormData, ArtStyle } from '../../types'
+import { FormData, ArtStyle, ReferenceImage } from '../../types'
 import { OptionGrid, FormSection } from '../ui/FormElements'
 import {
     genreOptions,
@@ -36,6 +36,24 @@ export function SetupForm({
     onOpenArtModal,
     error
 }: SetupFormProps) {
+    const handleRefUpload = (type: 'product' | 'character', file?: File | null) => {
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = () => {
+            const ref: ReferenceImage = {
+                type,
+                name: file.name,
+                dataUrl: String(reader.result || ''),
+            }
+            if (type === 'product') {
+                setFormData({ ...formData, productRefImage: ref })
+            } else {
+                setFormData({ ...formData, characterRefImage: ref })
+            }
+        }
+        reader.readAsDataURL(file)
+    }
+
     return (
         <div className="creator-form-panel">
             <div className="form-progress">
@@ -119,6 +137,41 @@ export function SetupForm({
                         <span className="art-style-name">{formData.artStyle.name}</span>
                     </div>
                 </button>
+
+                <textarea
+                    className="input"
+                    placeholder="สไตล์กำหนดเอง (Optional) เช่น clean luxury, soft rim light, premium product shot, 35mm, shallow DOF"
+                    value={formData.customStylePrompt || ''}
+                    onChange={(e) => setFormData({ ...formData, customStylePrompt: e.target.value })}
+                    rows={2}
+                    style={{ resize: 'vertical', minHeight: '48px', marginTop: '0.6rem' }}
+                />
+            </FormSection>
+
+            <FormSection icon="🖼️" title="Nano Banana Reference (สินค้า + ตัวละคร)">
+                <div style={{ display: 'grid', gap: '0.6rem' }}>
+                    <label style={{ fontSize: '0.9rem', opacity: 0.9 }}>รูปสินค้า (Product Ref)</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="input"
+                        onChange={(e) => handleRefUpload('product', e.target.files?.[0] || null)}
+                    />
+                    {formData.productRefImage && (
+                        <small>✅ {formData.productRefImage.name}</small>
+                    )}
+
+                    <label style={{ fontSize: '0.9rem', opacity: 0.9, marginTop: '0.35rem' }}>รูปตัวละคร (Character Ref)</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="input"
+                        onChange={(e) => handleRefUpload('character', e.target.files?.[0] || null)}
+                    />
+                    {formData.characterRefImage && (
+                        <small>✅ {formData.characterRefImage.name}</small>
+                    )}
+                </div>
             </FormSection>
 
             <FormSection icon="🚫" title="Negative Prompt">

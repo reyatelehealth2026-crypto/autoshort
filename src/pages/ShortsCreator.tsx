@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { generateNextScene } from '../services/gemini'
+import { generateImageWithNanoBanana } from '../services/nanoBanana'
 import toast from 'react-hot-toast'
 import ArtStyleModal from '../components/ArtStyleModal'
 import { SetupForm } from '../components/shorts-creator/SetupForm'
@@ -37,6 +38,54 @@ export default function ShortsCreator() {
     if (!currentScript) return
 
     const settings = useSettingsStore.getState()
+
+    const references = [formData.productRefImage, formData.characterRefImage].filter(Boolean)
+    if (references.length > 0) {
+      useProjectStore.getState().setScriptData({
+        ...currentScript,
+        scenes: currentScript.scenes.map((s, i) =>
+          i === idx ? { ...s, visualRefStatus: 'generating' as const } : s
+        )
+      })
+
+      try {
+        const scene = currentScript.scenes[idx]
+        const orientation = formData.orientation === 'vertical' ? 'vertical' : formData.orientation === 'horizontal' ? 'horizontal' : 'square'
+        const data = await generateImageWithNanoBanana({
+          prompt: scene.imagePrompt,
+          orientation,
+          references: references as any,
+        })
+
+        const updatedScript = useProjectStore.getState().scriptData
+        if (!updatedScript) return
+
+        useProjectStore.getState().setScriptData({
+          ...updatedScript,
+          scenes: updatedScript.scenes.map((s, i) =>
+            i === idx ? {
+              ...s,
+              visualRefStatus: 'ready' as const,
+              visualRefUrl: data.imageDataUrl
+            } : s
+          )
+        })
+
+        toast.success('Generated with Nano Banana + references')
+        return
+      } catch (err: any) {
+        console.error(err)
+        toast.error(`Nano Banana failed: ${err.message}`)
+        useProjectStore.getState().setScriptData({
+          ...currentScript,
+          scenes: currentScript.scenes.map((s, i) =>
+            i === idx ? { ...s, visualRefStatus: 'error' as const } : s
+          )
+        })
+        return
+      }
+    }
+
     if (!settings.leonardoKey) {
       // Use Pollinations AI for free image generation
       useProjectStore.getState().setScriptData({

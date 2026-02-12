@@ -95,16 +95,47 @@ export interface ScriptSummary {
     suggestedHashtags: string[]
 }
 
+export interface StructuredSceneOutput {
+    scene_number: number
+    time_range: { start: number; end: number; duration: number }
+    image_prompt: string
+    negative_prompt?: string
+    camera: { angle: string; movement: string }
+    visuals: { color_tone: string; mood: string; style: string }
+    dialogue: string
+    voice_tone: string
+    music: string
+    subtitle_lines: string[]
+    edit_notes: string[]
+}
+
+export interface StructuredShortClipOutput {
+    title_options: string[]
+    hook: string
+    script: string
+    scenes: StructuredSceneOutput[]
+    cta: string
+    hashtags: string[]
+    edit_notes: string[]
+}
+
 export interface ScriptJsonOutput {
     metadata: ScriptMetadata
     automation_ready: AutomationReady
     project: ProjectInfo
     scenes: SceneData[]
     summary: ScriptSummary
+    structuredClip?: StructuredShortClipOutput
     rawScript: string
 }
 
 // ==================== Form Data ====================
+export interface ReferenceImage {
+    type: 'product' | 'character'
+    name: string
+    dataUrl: string
+}
+
 export interface FormData {
     topic: string
     genre: string
@@ -117,6 +148,9 @@ export interface FormData {
     artStyle: ArtStyle
     additionalInfo: string
     negativePrompt: string
+    productRefImage?: ReferenceImage | null
+    characterRefImage?: ReferenceImage | null
+    customStylePrompt?: string
 }
 
 // ==================== Chat ====================

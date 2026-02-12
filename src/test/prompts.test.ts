@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { buildScriptPrompt, buildTrendPrompt, CREATIVE_DIRECTOR_SYSTEM_PROMPT, DIRECTOR_FUNCTION_DECLARATIONS } from '../prompts/templates'
 
 describe('Prompt Templates', () => {
@@ -25,7 +25,7 @@ describe('Prompt Templates', () => {
             expect(prompt).toContain('เน้นภาพสวยๆ')
         })
 
-        it('should handle missing additionalInfo', () => {
+        it('should contain modular layers and structured output contract', () => {
             const prompt = buildScriptPrompt({
                 topic: 'test',
                 genre: 'comedy',
@@ -38,8 +38,14 @@ describe('Prompt Templates', () => {
                 music: 'pop',
             })
 
-            expect(prompt).toContain('test')
-            expect(prompt).not.toContain('รายละเอียดเพิ่มเติม')
+            expect(prompt).toContain('[STRATEGY LAYER]')
+            expect(prompt).toContain('[SCRIPT LAYER]')
+            expect(prompt).toContain('[VISUAL LAYER]')
+            expect(prompt).toContain('[POLISH LAYER]')
+            expect(prompt).toContain('[OUTPUT CONTRACT - JSON ONLY]')
+            expect(prompt).toContain('"title_options"')
+            expect(prompt).toContain('"subtitle_lines"')
+            expect(prompt).toContain('"edit_notes"')
         })
     })
 

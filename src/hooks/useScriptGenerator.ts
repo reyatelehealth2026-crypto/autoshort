@@ -5,6 +5,7 @@ import { useUIStore } from '../stores/useUIStore'
 import { generateWithGemini, fetchTrendsWithGemini } from '../services/gemini'
 import { chatWithDirector } from '../services/director'
 import { generateJsonOutput } from '../utils/scriptParser'
+import { validateScriptOutput } from '../utils/qaValidator'
 import { ChatMessage, TrendIdea } from '../types'
 import toast from 'react-hot-toast'
 
@@ -41,9 +42,19 @@ export function useScriptGenerator() {
             clearInterval(interval)
             setProgress(100)
             const jsonOutput = generateJsonOutput(formData, generatedText)
+            const qa = validateScriptOutput(formData, jsonOutput)
+
+            if (!qa.passed) {
+                const topIssue = qa.flags[0]?.message || 'คุณภาพยังไม่ถึงเกณฑ์'
+                setError(`QA: ${topIssue} (score ${qa.score}/100)`)
+                setIsGenerating(false)
+                toast.error(`QA ไม่ผ่าน (${qa.score}/100) — ลองปรับ prompt หรือ regenerate`)
+                return
+            }
+
             setScriptData(jsonOutput)
             setIsGenerating(false)
-            toast.success('สร้างสคริปต์เสร็จเรียบร้อย! 🎬')
+            toast.success(`สร้างสคริปต์เสร็จเรียบร้อย! 🎬 (QA ${qa.score}/100)`)
         } catch (err: any) {
             const msg = err.message || 'เกิดข้อผิดพลาดในการสร้างสคริปต์'
             setError(msg)
@@ -95,14 +106,22 @@ export function useScriptGenerator() {
                     additionalInfo: idea.desc
                 })
                 setProgress(100)
-                const jsonOutput = generateJsonOutput(
-                    { ...formData, topic: idea.title, tone: idea.tone, additionalInfo: idea.desc },
-                    generatedText
-                )
+                const effectiveForm = { ...formData, topic: idea.title, tone: idea.tone, additionalInfo: idea.desc }
+                const jsonOutput = generateJsonOutput(effectiveForm, generatedText)
+                const qa = validateScriptOutput(effectiveForm, jsonOutput)
+
+                if (!qa.passed) {
+                    setError(`QA: ${qa.flags[0]?.message || 'คุณภาพยังไม่ถึงเกณฑ์'} (score ${qa.score}/100)`)
+                    setIsGenerating(false)
+                    setSuperStep('input')
+                    toast.error(`QA ไม่ผ่าน (${qa.score}/100) — กรุณาลองเลือกมุมใหม่`)
+                    return
+                }
+
                 setScriptData(jsonOutput)
                 setIsGenerating(false)
                 setSuperStep('input')
-                toast.success('SuperCreate เสร็จสมบูรณ์! 🚀')
+                toast.success(`SuperCreate เสร็จสมบูรณ์! 🚀 (QA ${qa.score}/100)`)
             } catch (err: any) {
                 setError(err.message)
                 setIsGenerating(false)
